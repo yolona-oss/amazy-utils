@@ -13,8 +13,10 @@ type ExtendedLog = {
         error: (...arg: any[]) => void
 }
 let log = <ExtendedLog>function(...arg: any[]): void {
-        if (existsSync(logFileName)) {
+        try {
                 appendFileSync(logFileName, logTime() + ' - ' + arg.join(" ") + "\n")
+        } catch (e) {
+
         }
 }
 log.error = function(...arg: any[]) {

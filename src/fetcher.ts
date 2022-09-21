@@ -4,6 +4,7 @@ import {
         keyPair,
         AZYProfileData
 } from './types.js'
+import log from './logger.js'
 
 function checkResponse(http_res: any, errorText: string) {
         function checkAzyREST(http_res: any, errorText: string) {
@@ -43,6 +44,7 @@ export async function getAccountData(keys: keyPair): Promise<AZYProfileData> {
                 if (checkResponse(http_res, "Fetch JWT error")) {
                         return http_res.data.data
                 } else {
+                        log.error("False response after sending sign data")
                         throw "Request error " + http_res.statusText
                 }
         }
@@ -54,8 +56,10 @@ export async function getAccountData(keys: keyPair): Promise<AZYProfileData> {
         })
 
         if (checkResponse(http_res, "Fetch profile data error")) {
+                log(JSON.stringify(http_res.data.data, null, "\t"))
                 return http_res.data.data
         } else {
+                log.error("Cannot fetch profile data")
                 throw "Request error " + http_res.statusText
         }
 }

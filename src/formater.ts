@@ -25,6 +25,16 @@ const assign_map = new Map([
                 "amt", (data: AZYProfileData, wallet: keyPair): string => {
                         return String(data.player.wallets[wallet.publicKey].AMT)
                 }
+        ],
+        [
+                "ToClaimAMT", (data: AZYProfileData): string => {
+                        return data.tracking.earnedToClaim.AMT.toFixed(2)
+                }
+        ],
+        [
+                "ToClaimAZY", (data: AZYProfileData): string => {
+                        return data.tracking.earnedToClaim.AMT.toFixed(2)
+                }
         ]
 ])
 

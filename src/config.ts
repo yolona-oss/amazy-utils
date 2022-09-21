@@ -4,7 +4,12 @@ import * as fs from 'fs'
 import log from './logger.js'
 
 const _cfg_path = './config.json'
-log.echo("Config path:", realpathSync(_cfg_path))
+// skip realpathSync error for first run
+try {
+        log.echo("Config path:", realpathSync(_cfg_path))
+} catch (e) {
+
+}
 
 const configSign = object({
         concurrency: number(), // TODO not implemented
