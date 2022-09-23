@@ -1,4 +1,5 @@
 import eol from 'eol'
+import progress from 'progress'
 import {
         readFileSync,
         readdirSync,
@@ -21,7 +22,13 @@ export function load(path: string): Account[] {
         log.echo("Line-by-line parser active")
         log.echo("Loading accounts")
         let raw_data = ""
-        for (const file of readdirSync(path)) {
+        const files = readdirSync(path)
+        let reading_files_bar = new progress("Reading [:bar] :current/:total :rate/fps :etas", {
+                total: files.length,
+                width: process.stdout.columns,
+                complete: "#"
+        })
+        for (const file of files) {
                 log.echo("Reading file:", file)
                 let raw = eol.lf(readFileSync(Path.join(path, file)).toString().trim())
                 if (raw.length > 0 && raw[raw.length-1] != '\n') {
@@ -29,12 +36,13 @@ export function load(path: string): Account[] {
                 }
                 log.echo("Found", raw.split('\n').length, "lines")
                 raw_data = raw_data.concat(raw)
+                reading_files_bar.tick()
         }
 
-        log.echo("Total lines:", raw_data.split("\n").length)
+        log.echo("Total lines:", eol.lf(raw_data).split("\n").length)
 
         let ret: Account[] = new Array()
-        for (const line of raw_data.split("\n")) {
+        for (const line of eol.lf(raw_data).split("\n")) {
                 let account = {
                         publicKey: "",
                         privateKey: ""
@@ -48,7 +56,7 @@ export function load(path: string): Account[] {
                 }
 
                 if (_web3.utils.isAddress(words[0])) {
-                        account.publicKey = words[0]
+                        account.publicKey = _web3.utils.toChecksumAddress(words[0])
                         if (isPrivateKey(words[1])) {
                                 account.privateKey = words[1]
                                 ret.push(account)

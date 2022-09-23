@@ -1,3 +1,9 @@
+import * as fs from 'fs'
+import eol from 'eol'
+
+export function reverseFileLines(path: fs.PathLike) {
+        fs.writeFileSync(path, eol.lf(fs.readFileSync(path).toString()).split("\n").reverse().join("\n"))
+}
 
 export function getDataByPath(obj: object, path: string): any {
         let ret: any = obj
@@ -27,7 +33,7 @@ export function assign(obj: object, _prop: string, value: any) {
 }
 
 export async function retrier(fn: () => Promise<boolean>, opts?: { tries?: number, wait?: number  }) {
-        const default_opts = { tries: 3, wait: 700  }
+        const default_opts = { tries: 3, wait: 700 }
         const _opts = {
                 ...default_opts,
                 ...opts

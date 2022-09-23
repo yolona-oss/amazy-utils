@@ -1,13 +1,12 @@
 import { keyPair, AZYProfileData } from './types.js'
 
+function translateNumber(n: number): string {
+        return Intl.NumberFormat('ru-Ru').format(Number(n.toFixed(2)))
+}
+
 const assign_map = new Map([
         [
                 "address", (_: AZYProfileData, wallet: keyPair): string => {
-                        // let ret: string[] = []
-                        // Object.keys(data.player.wallets).forEach(v => {
-                        //         ret.push(String(v))
-                        // })
-                        // return ret
                         return wallet.publicKey
                 },
         ],
@@ -18,22 +17,22 @@ const assign_map = new Map([
         ],
         [
                 "azy", (data: AZYProfileData, wallet: keyPair): string => {
-                        return String(data.player.wallets[wallet.publicKey].AZY)
+                        return translateNumber(Number(data.player.wallets[wallet.publicKey].AZY))
                 }
         ],
         [
                 "amt", (data: AZYProfileData, wallet: keyPair): string => {
-                        return String(data.player.wallets[wallet.publicKey].AMT)
+                        return translateNumber(Number(data.player.wallets[wallet.publicKey].AMT))
                 }
         ],
         [
                 "ToClaimAMT", (data: AZYProfileData): string => {
-                        return data.tracking.earnedToClaim.AMT.toFixed(2)
+                        return translateNumber(data.tracking.earnedToClaim.AMT)
                 }
         ],
         [
                 "ToClaimAZY", (data: AZYProfileData): string => {
-                        return data.tracking.earnedToClaim.AMT.toFixed(2)
+                        return translateNumber(data.tracking.earnedToClaim.AMT)
                 }
         ]
 ])
@@ -47,35 +46,35 @@ export function out_format(data: AZYProfileData, wallet: keyPair, format: string
 }
 
 
-        // let max = 0
-        // for (const [ search, _ ] of assign_map) {
-        //         let cur = map.get(search)!.length
-        //         if (cur > max) {
-        //                 max = cur
-        //         }
-        // }
-        //
-        // let ret = new Array<string>()
-        //
-        // // let signCount = 0
-        // //
-        // // for (const sign of assign_map.keys()) {
-        // //         if (format.indexOf(sign) >= 0) {
-        // //                 signCount++
-        // //         }
-        // // }
-        //
-        // for (let i = 0; i < max; i++) {
-        //         ret.push("")
-        // }
-        //
-        // for (let i = 0; i < max; i++) {
-        //         let tmp_format = format
-        //         for (const sign of map.keys()) {
-        //                 tmp_format = tmp_format.replaceAll(sign, map.get("sign")![i check len])
-        //         }
-        //         ret[i] = tmp_format
-        // }
+// let max = 0
+// for (const [ search, _ ] of assign_map) {
+//         let cur = map.get(search)!.length
+//         if (cur > max) {
+//                 max = cur
+//         }
+// }
+//
+// let ret = new Array<string>()
+//
+// // let signCount = 0
+// //
+// // for (const sign of assign_map.keys()) {
+// //         if (format.indexOf(sign) >= 0) {
+// //                 signCount++
+// //         }
+// // }
+//
+// for (let i = 0; i < max; i++) {
+//         ret.push("")
+// }
+//
+// for (let i = 0; i < max; i++) {
+//         let tmp_format = format
+//         for (const sign of map.keys()) {
+//                 tmp_format = tmp_format.replaceAll(sign, map.get("sign")![i check len])
+//         }
+//         ret[i] = tmp_format
+// }
 
 
 

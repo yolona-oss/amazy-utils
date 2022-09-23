@@ -10,10 +10,10 @@ export interface keyPair{
 export type Account = keyPair
 
 export interface AZYWallet {
-        BNB: number
-        BUSD: number
-        AMT: number
-        AZY: number
+        BNB: string
+        BUSD: string
+        AMT: string
+        AZY: string
 }
 
 export interface AZYProfileData {
@@ -43,4 +43,9 @@ export interface AZYProfileData {
                 sessions: number,
                 perDayLimits: Record<string, Pick<AZYWallet, "AMT" | "AZY">>
         }
+}
+
+export interface ClaimOptions {
+        minAMT: number,
+
 }

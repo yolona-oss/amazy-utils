@@ -1,4 +1,4 @@
-import { exists, existsSync, appendFileSync } from 'fs'
+import { appendFileSync } from 'fs'
 import chalk from 'chalk'
 
 function logTime() {
