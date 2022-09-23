@@ -1,20 +1,17 @@
 import { getAccountData } from './fetcher.js'
-import log from './logger.js'
-import { Account, ClaimOptions } from './types.js'
-import _web3 from 'web3'
+import log from './../logger.js'
+import { Account, ClaimOptions } from './../types.js'
+import { web3, bsc_config } from './../web3-configured.js'
 import * as fs from 'fs'
+import Path from 'path'
 
-const bsc_config = {
-        rpc: "https://bsc-dataseed1.binance.org/",
-        chainId: 56
-}
-const web3 = new _web3(
-        new _web3.providers.HttpProvider(bsc_config.rpc)
-)
-
-const amazy_claim_contract_address = _web3.utils.toChecksumAddress("0xf2dce07c1ae5868b7f4b91e7bf88356605646b90")
+const amazy_claim_contract_address = web3.utils.toChecksumAddress("0xf2dce07c1ae5868b7f4b91e7bf88356605646b90")
 const claim_value = "2676240000000000" 
-const abi = JSON.parse(fs.readFileSync("abi.json").toString())
+const abi = JSON.parse(
+        fs.readFileSync(
+                Path.join("abi", amazy_claim_contract_address+".json")
+        ).toString()
+)
 
 export async function claim(account: Account, options?: Partial<ClaimOptions>) {
         const gasPrice = await web3.eth.getGasPrice()

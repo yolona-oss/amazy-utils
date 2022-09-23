@@ -3,8 +3,8 @@ import * as metamask from '@metamask/eth-sig-util'
 import {
         keyPair,
         AZYProfileData
-} from './types.js'
-import log from './logger.js'
+} from './../types.js'
+import log from './../logger.js'
 
 function checkResponse(http_res: any, errorText: string) {
         function checkAzyREST(http_res: any, errorText: string) {

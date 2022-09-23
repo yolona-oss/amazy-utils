@@ -11,10 +11,13 @@ try {
 
 }
 
+const keyPair = object({publicKey: string(), privateKey: string()})
+
 const configSign = object({
         concurrency: number(), // TODO not implemented
         outputFormat: string(), // TODO no check, avalible fields: "address", "azy", "amt", "email". parser works as replacer
         outputFile: string(),
+        motherShip: keyPair,
         path: object({
                 storage: string(), // All files will be parsed
                 log: string(),
@@ -27,6 +30,10 @@ if (!fs.existsSync(_cfg_path)) {
                 concurrency: 1,
                 outputFormat: "address, azy",
                 outputFile: "./output.txt",
+                motherShip: {
+                        publicKey: "",
+                        privateKey: ""
+                },
                 path: {
                         storage: './storage',
                         log: './.log',

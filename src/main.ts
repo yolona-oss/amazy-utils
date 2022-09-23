@@ -1,7 +1,6 @@
 import { Account } from './types.js'
 import { load } from './loader.js'
-import { getAccountData } from './fetcher.js'
-import { claim } from './claim.js'
+import { getAccountData, claim, transferAMT } from './methods/index.js'
 import cfg from './config.js'
 import { out_format } from './formater.js'
 import log from './logger.js'
@@ -45,16 +44,26 @@ class WorkerFetch extends Worker {
 
 class WorkerClaim extends Worker {
         constructor(account: Account) { super(account) } 
-
-        on_done(_: string) {
-        }
-
-        on_all_done() {
-
-        }
+        on_done(_: string) { }
+        on_all_done() { }
 
         public async exec() {
                 await claim(this.account)
+
+                return {
+                        worker: this,
+                        res: ""
+                }
+        }
+}
+
+class WorkerTransfer extends Worker {
+        constructor(account: Account) { super(account) } 
+        on_done(_: string) { }
+        on_all_done() { }
+
+        public async exec() {
+                await transferAMT(this.account, cfg.motherShip.publicKey)
 
                 return {
                         worker: this,
@@ -85,14 +94,28 @@ class Builder_claim extends Builder {
         }
 }
 
+class Builder_transfer extends Builder {
+        constructor() {super()}
+
+        produce(account: Account) {
+                return new WorkerTransfer(account)
+        }
+}
+
 class App {
         constructor() {
                 const mode = process.argv[2]
-                if (mode == "fetch") {
-                        this.builder = new Builder_fetch()
-                } else if (mode == "claim") {
-                        this.builder = new Builder_claim()
-                } else {
+                switch (mode) {
+                        case "fetch":
+                                this.builder = new Builder_fetch()
+                                break
+                        case "claim":
+                                this.builder = new Builder_claim()
+                                break
+                        case "transfer":
+                                this.builder = new Builder_transfer()
+                                break
+                        default:
                         throw `No execution mode passed or invalide mode: "${mode}"`
                 }
         }

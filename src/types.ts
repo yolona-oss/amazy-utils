@@ -1,5 +1,6 @@
 // Disgusting :)
 export type publicKey = string
+export type Address = publicKey
 export type privateKey = string
 
 export interface keyPair{
