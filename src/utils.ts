@@ -1,5 +1,10 @@
 import * as fs from 'fs'
 import eol from 'eol'
+import _web3 from 'web3'
+
+export function jsonStrip(s: string) {
+        return s.replace(/\\"|"(?:\\"|[^"])*"|(\/\/.*|\/\*[\s\S]*?\*\/)/g, (m, g) => g ? "" : m)
+}
 
 export function reverseFileLines(path: fs.PathLike) {
         fs.writeFileSync(path, eol.lf(fs.readFileSync(path).toString()).split("\n").reverse().join("\n"))

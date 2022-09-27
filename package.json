@@ -1,5 +1,5 @@
 {
-        "name": "paragon",
+        "name": "amazy-utils",
         "version": "0.0.1",
         "main": "dist/main.js",
         "type": "module",
@@ -8,6 +8,7 @@
                 "start-server": "node dist/main.js"
         },
         "dependencies": {
+                "@jpmonette/bscscan": "^0.2.4",
                 "@metamask/eth-sig-util": "^5.0.0",
                 "@types/axios": "^0.14.0",
                 "@types/progress": "^2.0.5",

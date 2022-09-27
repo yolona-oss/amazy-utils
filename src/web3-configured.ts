@@ -1,13 +1,14 @@
 import _web3 from 'web3'
+import cfg from './config.js'
+import networks from './networks.js'
 import log from './logger.js'
+import { Modes } from './constants.js'
 
-export const bsc_config = {
-        rpc: "https://bsc-dataseed1.binance.org/",
-        chainId: 56
-}
-log.echo("Connecting to bsc chain")
+const net = globalThis.mode === Modes.transfer ? cfg.utils.transfer.chain ?? "eth" : "bsc"
+export const network_config = networks[net]
+log.echo("Connecting to", net, "chain")
 export const web3 = new _web3(
-        new _web3.providers.HttpProvider(bsc_config.rpc)
+        new _web3.providers.HttpProvider(network_config.rpc.toString())
 )
 
-log.echo("bsc chain gas price:", await web3.eth.getGasPrice())
+log.echo("Current", net, "chain gas price:", await web3.eth.getGasPrice())

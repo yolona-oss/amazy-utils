@@ -1,10 +1,11 @@
 import { keyPair, AZYProfileData } from './types.js'
+import cfg from './config.js'
 
 function translateNumber(n: number): string {
-        return Intl.NumberFormat('ru-Ru').format(Number(n.toFixed(2)))
+        return Intl.NumberFormat(cfg.utils.fetchInfo.unitsLocale).format(Number(n.toFixed(2)))
 }
 
-const assign_map = new Map([
+export const assign_map = new Map([
         [
                 "address", (_: AZYProfileData, wallet: keyPair): string => {
                         return wallet.publicKey

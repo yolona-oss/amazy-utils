@@ -1,36 +1,135 @@
-import * as fs from 'fs'
-import { web3 } from './../web3-configured.js'
+import { web3, network_config } from './../web3-configured.js'
 import { keyPair, Address } from './../types.js'
-import Path from 'path'
+import cfg from './../config.js'
+import chainScan from '@jpmonette/bscscan'
+import log from './../logger.js'
 
-const amazy_amt_contract_address = web3.utils.toChecksumAddress("0xf625069dce62df95b4910f83446954b871f0fc4f")
-const abi = JSON.parse(
-        fs.readFileSync(
-                Path.join("abi", amazy_amt_contract_address+".json")
-        ).toString()
-)
+const bsc_scan_key = cfg.bscscanAPIKey
+const scan = new chainScan.BscScan({
+        apikey: bsc_scan_key
+})
 
-export async function transferAMT(src: keyPair, dst: Address) {
-        if (src.publicKey === dst) {
-                throw "Cannot transfer to same address"
+export class ERC_20_TransferWizard {
+        private contract
+        private token_contract_address
+
+        public transfer: (src: keyPair, dst: Address, amount: string) => Promise<boolean>
+
+        constructor(contract_address?: string) {
+                if (contract_address) {
+                        this.token_contract_address = web3.utils.toChecksumAddress(contract_address)
+                        // just type setting
+                        this.contract = new web3.eth.Contract([], this.token_contract_address)
+                }
+                this.transfer = this.native_token_transfer
         }
 
-        const gasPrice = await web3.eth.getGasPrice()
-        const gas = 300000
-        web3.eth.accounts.wallet.add(src.privateKey)
-        let contract = new web3.eth.Contract(abi, amazy_amt_contract_address, {
-                from: src.publicKey,
-                gasPrice,
-                gas
-        })
-        dst
+        async init() {
+                if (this.token_contract_address) {
+                        const abi = JSON.parse(
+                                await scan.contracts.getAbi({ address: this.token_contract_address })
+                        )
+                        this.contract = new web3.eth.Contract(abi, this.token_contract_address)
+                        this.transfer = this.erc_20_transfer
+                } else {
+                        this.transfer = this.native_token_transfer
+                }
+        }
 
-        contract.options.gas = gas
-        contract.options.gasPrice = gasPrice
+        private async checkTransferOpt(src: keyPair, dst: Address, amount: string) {
+                if (src.publicKey === dst) {
+                        throw "Cannot transfer to same address"
+                }
 
-        const amount = await contract.methods.balanceOf(src.publicKey).call()
+                if (amount.toLowerCase() != "all" && web3.utils.toBN(amount).lte(web3.utils.toBN(0))) {
+                        throw "Nothing to send. Amount lte zero"
+                }
+        }
 
-        await contract.methods.transfer(dst, amount).send({
-                from: src.publicKey
-        })
+        private async native_token_transfer(src: keyPair, dst: Address, amount: string) {
+                await this.checkTransferOpt(src, dst, amount)
+                web3.eth.accounts.wallet.add(src.privateKey)
+
+                const gasPrice = await web3.eth.getGasPrice()
+                let gas: number
+                if (Number(cfg.transactionMinting.gasLimit)) {
+                        gas = Number(cfg.transactionMinting.gasLimit)
+                } else {
+                        gas = 0
+                }
+
+                if (amount == "all") {
+                        amount = await web3.eth.getBalance(src.publicKey)
+                }
+
+                const tx = {
+                        to: dst,
+                        from: src.publicKey,
+                        nonce: await web3.eth.getTransactionCount(src.publicKey),
+                        gas: 0,
+                        gasPrice,
+                        value: amount,
+                        chainId: network_config.chainId,
+                        data: "0x"
+                }
+
+                const estGas = await web3.eth.estimateGas(tx)
+
+                if (gas < estGas) {
+                        tx.gas = estGas
+                        gas = estGas
+                } else {
+                        tx.gas = gas
+                }
+
+                if (
+                        web3.utils.toBN(await web3.eth.getBalance(src.publicKey)).lt(
+                                web3.utils.toBN(gasPrice).mul(
+                                        web3.utils.toBN(gas)
+                                )
+                        )
+                ) {
+                        throw "Not anought Native tokens to mint transaction"
+                }
+
+                let tx_res
+                try {
+                        let signed_tx = await web3.eth.accounts.signTransaction(tx, src.privateKey)
+                        if (signed_tx.rawTransaction) {
+                                tx_res = await web3.eth.sendSignedTransaction(signed_tx.rawTransaction)
+                        } else {
+                                throw "No raw transaction after signing"
+                        }
+                } catch (e) {
+                        log.error(e)
+                        throw e
+                }
+                return tx_res.status
+        }
+
+        private async erc_20_transfer(src: keyPair, dst: Address, amount: string) {
+                if (!this.contract) {
+                        throw "Contract not initialized"
+                }
+
+                await this.checkTransferOpt(src, dst, amount)
+
+                if (amount == "all") {
+                        amount = await web3.eth.getBalance(src.publicKey)
+                }
+
+                web3.eth.accounts.wallet.add(src.privateKey)
+
+                const balance = await this.contract.methods.balanceOf(src.publicKey).call()
+                if (balance <= 0) {
+                        throw "Nothing to send. Balance lte zero"
+                }
+
+                await this.contract.methods.transfer(dst, amount).encodeABI({
+                        from: src.publicKey,
+                })
+
+                return true
+        }
 }
+
