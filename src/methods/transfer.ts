@@ -60,6 +60,8 @@ export class ERC_20_TransferWizard {
 
                 if (amount == "all") {
                         amount = await web3.eth.getBalance(src.publicKey)
+                } else {
+                        amount = web3.utils.toWei(amount, "ether")
                 }
 
                 const tx = {
@@ -101,7 +103,6 @@ export class ERC_20_TransferWizard {
                                 throw "No raw transaction after signing"
                         }
                 } catch (e) {
-                        log.error(e)
                         throw e
                 }
                 return tx_res.status
@@ -116,6 +117,16 @@ export class ERC_20_TransferWizard {
 
                 if (amount == "all") {
                         amount = await web3.eth.getBalance(src.publicKey)
+                } else {
+                        amount = web3.utils.toWei(amount, "ether")
+                }
+
+                const gasPrice = await web3.eth.getGasPrice()
+                let gas: number
+                if (Number(cfg.transactionMinting.gasLimit)) {
+                        gas = Number(cfg.transactionMinting.gasLimit)
+                } else {
+                        gas = 0
                 }
 
                 web3.eth.accounts.wallet.add(src.privateKey)
@@ -125,11 +136,42 @@ export class ERC_20_TransferWizard {
                         throw "Nothing to send. Balance lte zero"
                 }
 
-                await this.contract.methods.transfer(dst, amount).encodeABI({
+                const tx_data = await this.contract.methods.transfer(dst, amount).encodeABI({
                         from: src.publicKey,
                 })
 
-                return true
+                let tx = {
+                        from: src.publicKey,
+                        to: this.token_contract_address,
+                        nonce: await web3.eth.getTransactionCount(src.publicKey),
+                        chainId: network_config.chainId,
+                        data: tx_data,
+                        gasPrice,
+                        gas: 0
+                }
+
+                const estGas = await web3.eth.estimateGas(tx)
+
+                if (gas < estGas) {
+                        tx.gas = estGas
+                        gas = estGas
+                } else {
+                        tx.gas = gas
+                }
+
+                let tx_res
+                try {
+                        let signed_tx = await web3.eth.accounts.signTransaction(tx, src.privateKey)
+                        if (signed_tx.rawTransaction) {
+                                tx_res = await web3.eth.sendSignedTransaction(signed_tx.rawTransaction)
+                        } else {
+                                throw "No raw transaction after signing"
+                        }
+                } catch (e) {
+                        throw e
+                }
+
+                return tx_res.status
         }
 }
 

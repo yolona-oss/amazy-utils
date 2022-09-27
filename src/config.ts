@@ -33,7 +33,8 @@ if (!fs.existsSync(_cfg_path)) {
                         "direction": "IN",  /* OUT cause sending from motherShip, IN - to motherShip */
                         "contract":  "0xf625069dce62dF95b4910f83446954B871F0Fc4f", /* For all ERC-20 tokens. if unset transfers will be performed with native token */
                         "chain":     "bsc", /* Chain name acronim: "bsc", "eth"... default: "bsc" */
-                        "amount":    "all"  /* Value or "all" for transfer all, zero cause fall throw */
+                        "amount":    "all", /* Value or "all" for transfer all, zero cause fall throw */
+                        "amountUnits": "ether" /* ether is default number view. check https://academy.binance.com/en/glossary/wei ; https://eth-converter.com/ */
                 },
                 "fetchInfo": {
                         "unitsLocale": "ru-RU", /* Numbers output format. e.g. ru-RU, en-EN */
