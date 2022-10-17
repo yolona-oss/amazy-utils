@@ -80,11 +80,11 @@ class WorkerTransfer extends Worker {
         private wizard
 
         private async in() {
-                this.wizard.transfer(this.account, cfg.motherShip.publicKey, cfg.utils.transfer.amount)
+                await this.wizard.transfer(this.account, cfg.motherShip.publicKey, cfg.utils.transfer.amount)
         }
 
         private async out() {
-                this.wizard.transfer(cfg.motherShip, this.account.publicKey, cfg.utils.transfer.amount)
+                await this.wizard.transfer(cfg.motherShip, this.account.publicKey, cfg.utils.transfer.amount)
         }
 
         public async exec() {

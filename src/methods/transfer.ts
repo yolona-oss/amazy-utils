@@ -3,6 +3,7 @@ import { keyPair, Address } from './../types.js'
 import cfg from './../config.js'
 import chainScan from '@jpmonette/bscscan'
 import log from './../logger.js'
+import ethers from 'ethers'
 
 const bsc_scan_key = cfg.bscscanAPIKey
 const scan = new chainScan.BscScan({
@@ -55,24 +56,24 @@ export class ERC_20_TransferWizard {
                 if (Number(cfg.transactionMinting.gasLimit)) {
                         gas = Number(cfg.transactionMinting.gasLimit)
                 } else {
-                        gas = 0
+                        gas = 133300
                 }
 
                 if (amount == "all") {
                         amount = await web3.eth.getBalance(src.publicKey)
                 } else {
-                        amount = web3.utils.toWei(amount, "ether")
+                        amount = ethers.utils.parseEther(amount).toString()
                 }
 
+                console.log(network_config.rpc)
                 const tx = {
                         to: dst,
+                        gas: gas,
                         from: src.publicKey,
                         nonce: await web3.eth.getTransactionCount(src.publicKey),
-                        gas: 0,
                         gasPrice,
                         value: amount,
                         chainId: network_config.chainId,
-                        data: "0x"
                 }
 
                 const estGas = await web3.eth.estimateGas(tx)
@@ -103,6 +104,7 @@ export class ERC_20_TransferWizard {
                                 throw "No raw transaction after signing"
                         }
                 } catch (e) {
+                        console.log("Sending error")
                         throw e
                 }
                 return tx_res.status
@@ -118,7 +120,7 @@ export class ERC_20_TransferWizard {
                 if (amount == "all") {
                         amount = await web3.eth.getBalance(src.publicKey)
                 } else {
-                        amount = web3.utils.toWei(amount, "ether")
+                        amount = ethers.utils.parseEther(amount).toString()
                 }
 
                 const gasPrice = await web3.eth.getGasPrice()

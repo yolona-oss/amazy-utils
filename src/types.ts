@@ -83,7 +83,6 @@ export const configSign = object({
                         contract: optional(string()), // For all ERC-20 tokens. if unset transfers will be performed with native token
                         chain: optional(AvalibleChains), // Chain name acronim: "bsc", "eth"... default: "bsc"
                         amount: string(), // value or "all" for transfer all, zero cause fall throw
-                        amountUnits: enums([ "wei", "kwei", "mwei", "gwei", "microether", "milliether", "ether" ])
                 }),
                 fetchInfo: object({
                         unitsLocale: string(), // ru, en...
